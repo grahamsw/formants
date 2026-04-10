@@ -247,7 +247,12 @@
       <div v-if="showAbout" class="info-content">
         <p>This synth uses the <strong>Source-Filter model</strong> of speech. A raw sound (Source) is shaped by resonances (Filters) to create vocal sounds.</p>
         <p><strong>The Pad:</strong> Maps F1 (height) and F2 (backness). Dragging morphs between vowel shapes.</p>
-        <p><strong>The Filters:</strong> Formants (F1, F2, F3) are bandpass filters that emphasize specific frequency regions, mimicking the shape of the human vocal tract.</p>
+        <p><strong>Formants (F1, F2, F3):</strong> These are resonant peaks created by the shape of the vocal tract. F1/F2 are the primary identifiers for vowels.</p>
+        <ul>
+          <li><strong>Pitch:</strong> The fundamental frequency of the 'glottal source' (the buzz of the vocal folds).</li>
+          <li><strong>BW (Bandwidth):</strong> The 'width' of the resonance. Narrower bandwidths sound more like a whistle or a pure tone; wider sounds more natural.</li>
+          <li><strong>Scale:</strong> Simulates a longer or shorter vocal tract (shifting all formants together). This makes the voice sound larger/deeper or smaller/brighter.</li>
+        </ul>
       </div>
     </div>
 
