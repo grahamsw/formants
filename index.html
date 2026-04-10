@@ -168,6 +168,53 @@
     }
 
     .error { color: #ff4444; font-size: 11px; }
+
+    /* Accordion / Info Section */
+    .info-section {
+      border: 1px solid #0a3020;
+      margin-bottom: 10px;
+    }
+    .info-header {
+      background: #0a2018;
+      padding: 6px 10px;
+      font-size: 10px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+    .info-content {
+      padding: 10px;
+      font-size: 11px;
+      line-height: 1.4;
+      color: #88ccaa;
+      border-top: 1px solid #0a3020;
+    }
+    .info-content p { margin-bottom: 8px; }
+    .info-content ul { margin-left: 16px; margin-bottom: 8px; }
+
+    /* Tooltip styling */
+    .slider-row label {
+      position: relative;
+      cursor: help;
+      text-decoration: underline dotted #336655;
+    }
+    .slider-row label:hover::after {
+      content: attr(data-desc);
+      position: absolute;
+      left: 30px;
+      top: 0;
+      background: #112211;
+      border: 1px solid #00ff88;
+      color: #00ff88;
+      padding: 6px;
+      font-size: 10px;
+      width: 180px;
+      z-index: 100;
+      box-shadow: 4px 4px 0 #000;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -190,6 +237,19 @@
     </header>
 
     <div v-if="error" class="error">{{ error }}</div>
+
+    <!-- About / Help Section -->
+    <div class="info-section">
+      <div class="info-header" @click="showAbout = !showAbout">
+        <span>[?] HOW IT WORKS / PARAMETERS</span>
+        <span>{{ showAbout ? '▲ HIDE' : '▼ SHOW' }}</span>
+      </div>
+      <div v-if="showAbout" class="info-content">
+        <p>This synth uses the <strong>Source-Filter model</strong> of speech. A raw sound (Source) is shaped by resonances (Filters) to create vocal sounds.</p>
+        <p><strong>The Pad:</strong> Maps F1 (height) and F2 (backness). Dragging morphs between vowel shapes.</p>
+        <p><strong>The Filters:</strong> Formants (F1, F2, F3) are bandpass filters that emphasize specific frequency regions, mimicking the shape of the human vocal tract.</p>
+      </div>
+    </div>
 
     <div class="main-row">
       <!-- XY Pad -->
@@ -232,7 +292,7 @@
         <!-- Sliders -->
         <div class="sliders">
           <div class="slider-row" v-for="s in sliders" :key="s.lbl">
-            <label :style="{ color: s.col }">{{ s.lbl }}</label>
+            <label :style="{ color: s.col }" :data-desc="s.desc">{{ s.lbl }}</label>
             <input type="range" :min="s.min" :max="s.max"
               :style="{ accentColor: s.col }"
               :value="s.val"
@@ -389,6 +449,7 @@
       const spectroCanvas = ref(null);
       const overlayCanvas = ref(null);
 
+      const showAbout   = ref(false);
       const started     = ref(false);
       const voiced      = ref(true);
       const f1          = ref(500);
@@ -413,13 +474,13 @@
 
       // Sliders config
       const sliders = computed(() => [
-        { lbl:"F1",    col:"#ff6655", val:f1.value,     set: v => { f1.value = v; activeVowel.value = null; }, min:F1_MIN, max:F1_MAX, unit:"Hz" },
-        { lbl:"F2",    col:"#55ff88", val:f2.value,     set: v => { f2.value = v; activeVowel.value = null; }, min:F2_MIN, max:F2_MAX, unit:"Hz" },
-        { lbl:"F3",    col:"#5588ff", val:f3.value,     set: v => { f3.value = v; },                           min:2000,   max:3500,   unit:"Hz" },
-        { lbl:"BW",    col:"#ffaa33", val:bw.value,     set: v => { bw.value = v; },                           min:20,     max:300,    unit:"Hz" },
-        { lbl:"PITCH", col:"#ff88ff", val:pitch.value,  set: v => { pitch.value = v; },                        min:60,     max:400,    unit:"Hz" },
-        { lbl:"SCALE", col:"#88ddff", val:fScale.value, set: v => { fScale.value = v; },                       min:50,     max:200,    unit:"%" },
-        { lbl:"VOL",   col:"#aaaaaa", val:vol.value,    set: v => { vol.value = v; },                          min:0,      max:100,    unit:"%"  },
+        { lbl:"F1",    col:"#ff6655", val:f1.value,     set: v => { f1.value = v; activeVowel.value = null; }, min:F1_MIN, max:F1_MAX, unit:"Hz", desc: "First Formant: Controls vowel 'height'. High F1 = open mouth (e.g. /a/), Low F1 = closed (e.g. /i/)." },
+        { lbl:"F2",    col:"#55ff88", val:f2.value,     set: v => { f2.value = v; activeVowel.value = null; }, min:F2_MIN, max:F2_MAX, unit:"Hz", desc: "Second Formant: Controls 'backness'. High F2 = front tongue (e.g. /i/), Low F2 = back (e.g. /u/)." },
+        { lbl:"F3",    col:"#5588ff", val:f3.value,     set: v => { f3.value = v; },                           min:2000,   max:3500,   unit:"Hz", desc: "Third Formant: Adds realism and specific vocal character to the timbre." },
+        { lbl:"BW",    col:"#ffaa33", val:bw.value,     set: v => { bw.value = v; },                           min:20,     max:300,    unit:"Hz", desc: "Bandwidth: Sharpness of the resonance. Narrower is more 'whistly'; wider is more natural." },
+        { lbl:"PITCH", col:"#ff88ff", val:pitch.value,  set: v => { pitch.value = v; },                        min:60,     max:400,    unit:"Hz", desc: "Fundamental frequency (F0). Higher values simulate a higher voice pitch." },
+        { lbl:"SCALE", col:"#88ddff", val:fScale.value, set: v => { fScale.value = v; },                       min:50,     max:200,    unit:"%",  desc: "Vocal Tract Scale: Stretches all resonances to simulate different physical tract lengths (e.g. child vs adult)." },
+        { lbl:"VOL",   col:"#aaaaaa", val:vol.value,    set: v => { vol.value = v; },                          min:0,      max:100,    unit:"%",  desc: "Master output volume." },
       ]);
 
       const readouts = computed(() => [
@@ -606,7 +667,7 @@
       return {
         PAD_W, PAD_H, VOWELS,
         padCanvas, spectroCanvas, overlayCanvas,
-        started, voiced, f1, f2, f3, bw, vol, pitch, fScale,
+        showAbout, started, voiced, f1, f2, f3, bw, vol, pitch, fScale,
         sf1, sf2, sf3,
         activeVowel, dragging, error,
         sliders, readouts,
